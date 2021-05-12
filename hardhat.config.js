@@ -1,19 +1,15 @@
 /**
  * @type import('hardhat/config').HardhatUserConfig
  */
-require("@nomiclabs/hardhat-waffle");
+// require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-truffle5");
+// require("@ubeswap/hardhat-celo");
 // require("@nomiclabs/hardhat-etherscan");
-require("hardhat-deploy");
+// require("hardhat-deploy");
 require("./tasks/accounts");
 require("./tasks/balance");
-// require("./tasks/fund-link");
-// require("./tasks/block-number");
-// require("./tasks/block-number");
-// require("./tasks/random-number-consumer");
-// require("./tasks/price-consumer");
-// require("./tasks/api-consumer");
+require("./tasks/ube");
 
 require("dotenv").config();
 
@@ -34,6 +30,23 @@ const ETHERSCAN_API_KEY =
   process.env.ETHERSCAN_API_KEY || "Your etherscan API key";
 // optional
 const PRIVATE_KEY = process.env.PRIVATE_KEY || "your private key";
+
+const derivationPath = "m/44'/52752'/0'/0/";
+
+const { CeloProvider } = require("@celo-tools/celo-ethers-wrapper");
+const { CeloWallet } = require("@celo-tools/celo-ethers-wrapper");
+
+extendEnvironment((hre) => {
+  const provider = new CeloProvider(hre.network.config.url, hre.network.config);
+  const wallet = new CeloWallet(hre.network.config.accounts[0], provider);
+  // hre.network.provider = provider;
+  hre.celo = {
+    provider,
+    wallet,
+  };
+  // hre.ethers.provider = provider;
+  // hre.ethers.Wallet = CeloWallet;
+});
 
 module.exports = {
   defaultNetwork: "celo",
@@ -91,10 +104,10 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.6.6",
-      },
-      {
-        version: "0.4.24",
+        version: "0.5.13",
+        settings: {
+          evmVersion: "istanbul",
+        },
       },
       {
         version: "0.8.3",
