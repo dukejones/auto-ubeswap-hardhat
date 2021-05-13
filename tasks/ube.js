@@ -8,10 +8,8 @@ task("ube", "Work with UBE token")
   .setAction(async (taskArgs) => {
     const signer = await ethers.getSigner();
     const ubeToken = await ethers.getContractAt("UbeToken", ubeAddr);
-    console.log(
-      ethers.utils.formatEther(await ubeToken.balanceOf(signer.address)),
-      "UBE"
-    );
+    let ubeBalance = await ubeToken.balanceOf(signer.address);
+    console.log(ethers.utils.formatEther(ubeBalance), "UBE");
 
     const celoTokenProxy = await ethers.getContractAt(
       "contracts/celo-contracts/common/Proxy.sol:Proxy",
@@ -21,7 +19,7 @@ task("ube", "Work with UBE token")
     const celoTokenOrig = await ethers.getContractAt("GoldToken", celoAddr);
     const celoToken = celoTokenOrig.attach(celoTokenProxy.address);
     let celoBalance = await celoToken.balanceOf(signer.address);
-    console.log(celoBalance, "CELO");
+    console.log(ethers.utils.formatEther(celoBalance), "CELO");
 
     const router = await ethers.getContractAt(
       "IUniswapV2Router02",
@@ -31,7 +29,10 @@ task("ube", "Work with UBE token")
       ubeToken.address,
       celoToken.address
     );
-    console.log(ubeCeloAddr);
+    const ubeCeloLpToken = await ethers.getContractAt(
+      "IUniswapV2Pair",
+      ubeCeloAddr
+    );
 
     // STAKING
 
@@ -60,19 +61,19 @@ task("ube", "Work with UBE token")
     let receipt = await (await celo.wallet.sendTransaction(tx)).wait();
     console.log("Claim UBE", receipt.transactionHash);
 
-    let ubeBalance = await ubeToken.balanceOf(signer.address);
-    // function getAmountOut(uint amountIn, uint reserveIn, uint reserveOut) external pure returns (uint amountOut);
-
+    // Swap UBE for Celo
+    ubeBalance = await ubeToken.balanceOf(signer.address);
     tx = await router.populateTransaction.swapExactTokensForTokens(
       ubeBalance.shr(1),
       0,
       [ubeAddr, celoProxyAddr],
       signer.address,
-      Date.now() + 1000 * 60 * 2
+      Date.now() + 1000 * 60
     );
     receipt = await (await celo.wallet.sendTransaction(tx)).wait();
     console.log("Swap ube -> celo", receipt.transactionHash);
 
+    // display balances
     ubeBalance = await ubeToken.balanceOf(signer.address);
     celoBalance = await celoToken.balanceOf(signer.address);
     console.log(
@@ -81,6 +82,33 @@ task("ube", "Work with UBE token")
       ethers.utils.formatEther(celoBalance),
       "CELO"
     );
+
+    // how much token to deposit
+    let amounts = await router.getAmountsOut(ubeBalance, [
+      ubeAddr,
+      celoProxyAddr,
+    ]);
+    let celoAmount = amounts[1];
+
+    // add liquidity, get LP token
+    tx = await router.populateTransaction.addLiquidity(
+      ubeAddr,
+      celoProxyAddr,
+      ubeBalance,
+      celoAmount,
+      0,
+      0,
+      signer.address,
+      Date.now() + 1000 * 60
+    );
+    receipt = await (await celo.wallet.sendTransaction(tx)).wait();
+    console.log("Add liquidity:", receipt.transactionHash);
+
+    // deposit LP token into farming contract
+    let lpTokenBalance = await ubeCeloLpToken.balanceOf(signer.address);
+    tx = await ubeCeloPool.populateTransaction.stake(lpTokenBalance);
+    receipt = await (await celo.wallet.sendTransaction(tx)).wait();
+    console.log("Farm:", receipt.transactionHash);
   });
 
 module.exports = {};
