@@ -10,6 +10,7 @@ require("@nomiclabs/hardhat-truffle5");
 require("./tasks/accounts");
 require("./tasks/balance");
 require("./tasks/ube");
+require("./tasks/utest");
 
 require("dotenv").config();
 

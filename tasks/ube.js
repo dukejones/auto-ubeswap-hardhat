@@ -83,25 +83,37 @@ task("ube", "Work with UBE token")
       "CELO"
     );
 
-    // how much token to deposit
-    let amounts = await router.getAmountsOut(ubeBalance, [
-      ubeAddr,
-      celoProxyAddr,
-    ]);
-    let celoAmount = amounts[1];
+    let farmingTries = 0;
+    let farmComplete = false;
+    while (!farmComplete) {
+      farmingTries += 1;
+      // how much token to deposit
+      ubeBalance = await ubeToken.balanceOf(signer.address);
+      let amounts = await router.getAmountsOut(ubeBalance, [
+        ubeAddr,
+        celoProxyAddr,
+      ]);
+      let celoAmount = amounts[1];
 
-    // add liquidity, get LP token
-    tx = await router.populateTransaction.addLiquidity(
-      ubeAddr,
-      celoProxyAddr,
-      ubeBalance,
-      celoAmount,
-      0,
-      0,
-      signer.address,
-      Date.now() + 1000 * 60
-    );
-    receipt = await (await celo.wallet.sendTransaction(tx)).wait();
+      // add liquidity, get LP token
+      tx = await router.populateTransaction.addLiquidity(
+        ubeAddr,
+        celoProxyAddr,
+        ubeBalance,
+        celoAmount,
+        0,
+        0,
+        signer.address,
+        Date.now() + 1000 * 60
+      );
+      try {
+        receipt = await (await celo.wallet.sendTransaction(tx)).wait();
+        farmComplete = true;
+      } catch (e) {
+        if (farmingTries >= 5) throw e;
+        console.log(e);
+      }
+    }
     console.log("Add liquidity:", receipt.transactionHash);
 
     // deposit LP token into farming contract
