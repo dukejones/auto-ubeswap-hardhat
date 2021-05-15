@@ -5,7 +5,8 @@
   "scripts": {
     "test": "hardhat test",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "build": "hardhat compile"
   },
   "license": "MIT",
   "devDependencies": {
