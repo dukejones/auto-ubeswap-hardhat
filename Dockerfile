@@ -1,5 +1,5 @@
 FROM node:14.16.0-alpine
-RUN apk add --no-cache git bash
+RUN apk add --no-cache git
 
 WORKDIR /app
 COPY package.json yarn.lock ./
