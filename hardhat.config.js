@@ -10,7 +10,6 @@ require("@nomiclabs/hardhat-truffle5");
 require("./tasks/accounts");
 require("./tasks/balance");
 require("./tasks/ube");
-require("./tasks/utest");
 
 require("dotenv").config();
 
@@ -40,13 +39,10 @@ const { CeloWallet } = require("@celo-tools/celo-ethers-wrapper");
 extendEnvironment((hre) => {
   const provider = new CeloProvider(hre.network.config.url, hre.network.config);
   const wallet = new CeloWallet(hre.network.config.accounts[0], provider);
-  // hre.network.provider = provider;
   hre.celo = {
     provider,
     wallet,
   };
-  // hre.ethers.provider = provider;
-  // hre.ethers.Wallet = CeloWallet;
 });
 
 module.exports = {
@@ -63,7 +59,6 @@ module.exports = {
       url: CELO_MAINNET_RPC_URL,
       chainId: 42220,
       accounts: [process.env.CELO_PRIVATE_KEY],
-      from: "0x216285141F703d2952C60E01236B13a2DC524b8D",
     },
     kovan: {
       url: KOVAN_RPC_URL,
