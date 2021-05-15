@@ -3,9 +3,9 @@ RUN apk add --no-cache git
 
 WORKDIR /app
 COPY package.json yarn.lock ./
-RUN SKIP_POSTINSTALL=1 yarn install --frozen-lockfile
+RUN yarn install --frozen-lockfile
 
 COPY . .
 
-RUN yarn build
+RUN CELO_PRIVATE_KEY=0c23ab87c626102b0b1c0487f88612e6135a0e82840990970d0f299626b54c29 yarn build
 CMD [ "yarn", "hardhat", "ube" ]

@@ -13,7 +13,9 @@ require("./tasks/ube");
 
 require("dotenv").config();
 
-const CELO_MAINNET_RPC_URL = process.env.FORNO_MAINNET_RPC_URL;
+const CELO_MAINNET_RPC_URL =
+  process.env.FORNO_MAINNET_RPC_URL || "https://forno.celo.org";
+const CELO_PRIVATE_KEY = process.env.CELO_PRIVATE_KEY || "celo private key";
 
 const MAINNET_RPC_URL =
   process.env.MAINNET_RPC_URL ||
@@ -58,7 +60,7 @@ module.exports = {
     celo: {
       url: CELO_MAINNET_RPC_URL,
       chainId: 42220,
-      accounts: [process.env.CELO_PRIVATE_KEY],
+      accounts: [CELO_PRIVATE_KEY],
     },
     kovan: {
       url: KOVAN_RPC_URL,
