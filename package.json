@@ -6,7 +6,8 @@
     "test": "hardhat test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "build": "hardhat compile"
+    "build": "hardhat compile",
+    "service": "hardhat ube-service"
   },
   "license": "MIT",
   "devDependencies": {
