@@ -12,7 +12,10 @@ task("ube-service", "Farm UBE on a loop")
   .setAction(async (taskArgs) => {
     async function loop() {
       while (true) {
-        console.log("Let's farm!  ", new Date().toISOString());
+        console.log(
+          "Let's farm!  ",
+          new Date().toLocaleString("en-US", { timeZone: process.env.TIMEZONE })
+        );
         try {
           await farmCelo(ethers);
           console.log("Farm run complete.");
